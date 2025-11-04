@@ -12,7 +12,7 @@ namespace Web_UI_Automation.NUnit
     // d. Category
     [TestFixture]
     [Category("EHU_Website")]
-    public class Class1
+    public class NUnit
     {
         private IWebDriver _driver;
 
