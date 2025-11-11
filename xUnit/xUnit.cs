@@ -1,35 +1,30 @@
-using Xunit;
+﻿using Xunit;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using OpenQA.Selenium.Interactions;
+using Web_UI_Automation.Pages;
+using Web_UI_Automation.Core;
 
 namespace Web_UI_Automation.XUnit
 {
-    // b. ?????????? IClassFixture ??? Setup/TearDown
-    // d. Category (Trait) ?? ?????? ??????
+    // d. Category (Trait)
     [Trait("Category", "EHU_Website")]
-    public class xUnit : IClassFixture<WebDriverFixture>
+    public class XUnitTests : IClassFixture<WebDriverFixture> // b. IClassFixture
     {
         private readonly IWebDriver _driver;
+        private readonly EhuHomePage _homePage;
 
-        public xUnit(WebDriverFixture fixture)
+        public XUnitTests(WebDriverFixture fixture)
         {
             _driver = fixture.Driver;
+            _homePage = new EhuHomePage(_driver);
         }
 
-        // d. Category (Trait)
         [Fact]
         [Trait("Category", "Navigation")]
         public void Test_AboutEhuPageNavigation()
         {
-            _driver.Navigate().GoToUrl("https://en.ehu.lt/");
-            var aboutLink = _driver.FindElements(By.XPath("//a[contains(text(), 'About')]")).FirstOrDefault();
-            Assert.NotNull(aboutLink);
-            aboutLink.Click();
+            _homePage.GoToHomePage();
+            _homePage.ClickAboutLink();
 
             Assert.Contains("https://en.ehuniversity.lt/about/", _driver.Url);
             Assert.Contains("About", _driver.Title);
@@ -38,7 +33,6 @@ namespace Web_UI_Automation.XUnit
             Assert.NotNull(header);
         }
 
-        // c. Data provider (MemberData)
         public static IEnumerable<object[]> SearchTermsData =>
             new List<object[]>
             {
@@ -46,68 +40,38 @@ namespace Web_UI_Automation.XUnit
                 new object[] { "admission", "/?s=admission", "admission" }
             };
 
-        // d. Category (Trait)
-        [Theory] // c. ???????????? ??? ????????????????? ??????
+        [Theory] // c. Parametrized Test
         [MemberData(nameof(SearchTermsData))] // c. Data Provider
         [Trait("Category", "Search")]
         public void Test_SearchFunctionality(string searchTerm, string expectedUrlPart, string expectedResultWord)
         {
-            _driver.Navigate().GoToUrl("https://en.ehu.lt/");
+            _homePage.GoToHomePage();
 
-            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            var searchComponent = _homePage.GetSearchComponent();
+            searchComponent.PerformSearch(searchTerm);
 
-            var searchContainer = wait.Until(d => d.FindElement(By.CssSelector(".header-search")));
-            var actions = new Actions(_driver);
-            actions.MoveToElement(searchContainer).Perform();
-
-            var searchInput = wait.Until(d => d.FindElement(By.CssSelector("input[name='s']")));
-            Assert.NotNull(searchInput);
-
-            searchInput.SendKeys(searchTerm);
-
-            var searchButton = _driver.FindElement(By.CssSelector(".header-search__form button[type='submit']"));
-            Assert.NotNull(searchButton);
-
-            searchButton.Click();
-
-            wait.Until(d => d.Url.Contains(expectedUrlPart));
-            Assert.Contains(expectedUrlPart, _driver.Url);
-
-            var results = _driver.FindElements(By.CssSelector("article a"));
-            Assert.True(results.Any(r => r.Text.ToLower().Contains(expectedResultWord)));
+            Assert.True(searchComponent.CheckResults(expectedUrlPart, expectedResultWord));
         }
 
 
-        // d. Category (Trait)
         [Fact]
         [Trait("Category", "Navigation")]
         public void Test_LanguageChangeToLithuanian()
         {
-            _driver.Navigate().GoToUrl("https://en.ehu.lt/");
+            _homePage.GoToHomePage();
+            _homePage.ChangeLanguageToLithuanian();
 
-            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-
-            var langSwitcherMain = wait.Until(d => d.FindElement(By.CssSelector(".language-switcher > li > a")));
-            var actions = new Actions(_driver);
-            actions.MoveToElement(langSwitcherMain).Perform();
-
-            var lithuanianLink = wait.Until(d => d.FindElement(By.CssSelector(".language-switcher li ul li a[href='https://lt.ehuniversity.lt/']")));
-            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", lithuanianLink);
-
-            wait.Until(d => d.Url.Contains("lt.ehuniversity.lt"));
+            Assert.True(_homePage.IsLithuanianContentPresent());
             Assert.Contains("https://lt.ehuniversity.lt/", _driver.Url);
-
-            var bodyText = _driver.FindElement(By.TagName("body")).Text;
-            Assert.Contains("Apie", bodyText);
         }
 
-        // d. Category (Trait)
         [Fact]
         [Trait("Category", "Contact")]
         public void Test_ContactInfoDisplayed()
         {
-            _driver.Navigate().GoToUrl("https://en.ehu.lt/contact/");
-            var bodyText = _driver.FindElement(By.TagName("body")).Text;
+            var contactPage = new EhuContactPage(_driver);
+            contactPage.GoToContactPage();
+            var bodyText = contactPage.GetBodyText();
 
             Assert.Contains("franciskscarynacr@gmail.com", bodyText);
             Assert.Contains("+370 68 771365", bodyText);
