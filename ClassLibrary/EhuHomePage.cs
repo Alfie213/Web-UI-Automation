@@ -12,7 +12,6 @@ namespace Web_UI_Automation.Pages
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
 
-        // Локаторы
         private By AboutLinkLocator => By.XPath("//a[contains(text(), 'About')]");
         private By SearchContainerLocator => By.CssSelector(".header-search");
         private By LangSwitcherMainLocator => By.CssSelector(".language-switcher > li > a");

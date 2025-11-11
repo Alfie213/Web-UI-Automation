@@ -1,27 +1,25 @@
 ﻿using Xunit;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using System;
+using Web_UI_Automation.Core;
 
 namespace Web_UI_Automation.XUnit
 {
-    // b. Setup/TearDown (класс для настройки/очистки WebDriver)
+    // b. Setup/TearDown
     public class WebDriverFixture : IDisposable
     {
         public IWebDriver Driver { get; private set; }
 
         public WebDriverFixture()
         {
-            var options = new ChromeOptions();
-            //options.AddArgument("--headless=new");
-            Driver = new ChromeDriver(options);
-            Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+            Driver = WebDriverManager.Instance.GetDriver();
         }
 
-        // b. TearDown (вызывается xUnit после всех тестов, использующих этот Fixture)
+        // b. TearDown: IDisposable для IClassFixture
         public void Dispose()
         {
-            Driver.Quit();
+            // Закрываем IWebDriver через Singleton
+            WebDriverManager.Instance.QuitDriver();
         }
     }
 }

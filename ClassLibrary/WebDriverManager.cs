@@ -4,20 +4,15 @@ using System;
 
 namespace Web_UI_Automation.Core
 {
-    // Singleton (Обязательно) и Factory (Опционально)
     public sealed class WebDriverManager
     {
-        // Singleton: Приватный статический экземпляр
         private static WebDriverManager _instance = null;
         private static readonly object _lock = new object();
 
-        // Factory: Экземпляр IWebDriver
         private IWebDriver _driver;
 
-        // Singleton: Приватный конструктор
         private WebDriverManager() { }
 
-        // Singleton: Метод доступа к экземпляру
         public static WebDriverManager Instance
         {
             get
@@ -36,7 +31,6 @@ namespace Web_UI_Automation.Core
             }
         }
 
-        // Factory: Метод создания IWebDriver
         public IWebDriver GetDriver()
         {
             if (_driver == null)

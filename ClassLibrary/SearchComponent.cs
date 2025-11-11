@@ -6,20 +6,17 @@ using System;
 
 namespace Web_UI_Automation.Pages
 {
-    // Паттерн Builder: Компонент, созданный билдером
     public class SearchComponent
     {
         private readonly IWebDriver _driver;
         private readonly WebDriverWait _wait;
 
-        // Приватный конструктор (доступен только Билдеру)
         internal SearchComponent(IWebDriver driver, WebDriverWait wait)
         {
             _driver = driver;
             _wait = wait;
         }
 
-        // Локаторы
         private By SearchContainerLocator => By.CssSelector(".header-search");
         private By SearchInputLocator => By.CssSelector("input[name='s']");
         private By SearchButtonLocator => By.CssSelector(".header-search__form button[type='submit']");
@@ -27,7 +24,6 @@ namespace Web_UI_Automation.Pages
 
         public void PerformSearch(string searchTerm)
         {
-            // Наведение курсора (для открытия поиска)
             var searchContainer = _wait.Until(d => d.FindElement(SearchContainerLocator));
             new Actions(_driver).MoveToElement(searchContainer).Perform();
 
@@ -54,7 +50,6 @@ namespace Web_UI_Automation.Pages
         }
     }
 
-    // Паттерн Builder: Класс, который строит компонент
     public class SearchComponentBuilder
     {
         private readonly IWebDriver _driver;
