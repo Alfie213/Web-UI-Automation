@@ -11,7 +11,10 @@ namespace Web_UI_Automation.Core
 
         private IWebDriver _driver;
 
-        private WebDriverManager() { }
+        private WebDriverManager()
+        {
+            LoggerManager.Logger.Information("WebDriverManager (Singleton) initialized.");
+        }
 
         public static WebDriverManager Instance
         {
@@ -39,6 +42,7 @@ namespace Web_UI_Automation.Core
                 //options.AddArgument("--headless=new");
                 _driver = new ChromeDriver(options);
                 _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                LoggerManager.Logger.Information("New ChromeDriver instance created.");
             }
             return _driver;
         }
@@ -49,6 +53,7 @@ namespace Web_UI_Automation.Core
             {
                 _driver.Quit();
                 _driver = null;
+                LoggerManager.Logger.Warning("ChromeDriver instance closed.");
             }
         }
     }
