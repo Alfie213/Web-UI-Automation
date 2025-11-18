@@ -3,6 +3,7 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
 using OpenQA.Selenium.Interactions;
+using Web_UI_Automation.Core;
 
 namespace Web_UI_Automation.Pages
 {
@@ -26,14 +27,19 @@ namespace Web_UI_Automation.Pages
         public void GoToHomePage()
         {
             _driver.Navigate().GoToUrl("https://en.ehu.lt/");
+            LoggerManager.Logger.Debug($"Navigated to Home Page: {_driver.Url}");
         }
 
         public void ClickAboutLink()
         {
             var aboutLink = _driver.FindElements(AboutLinkLocator).FirstOrDefault();
             if (aboutLink == null)
+            {
+                LoggerManager.Logger.Error("About EHU link not found.");
                 throw new NoSuchElementException("About EHU link not found.");
+            }
             aboutLink.Click();
+            LoggerManager.Logger.Information("Clicked 'About' link.");
         }
 
         public SearchComponent GetSearchComponent()
