@@ -4,9 +4,16 @@ using System.Collections.Generic;
 using Web_UI_Automation.Core;
 using Web_UI_Automation.Pages;
 using Shouldly;
+using Allure.NUnit.Attributes;
+using System.IO;
+using Allure.NUnit;
+using Allure;
+using System;
+using NUnit.Framework.Interfaces;
 
 namespace Web_UI_Automation.NUnit
 {
+    [AllureNUnit]
     [TestFixture]
     [Category("EHU_Website")]
     public class NUnitTests
@@ -22,6 +29,31 @@ namespace Web_UI_Automation.NUnit
             _homePage = new EhuHomePage(_driver);
         }
 
+        [SetUp]
+        public void Setup()
+        {
+            _driver.Navigate().GoToUrl("about:blank");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+            {
+                LoggerManager.Logger.Error($"Test Failed: {TestContext.CurrentContext.Test.Name}. Capturing screenshot.");
+
+                ITakesScreenshot screenshotDriver = (ITakesScreenshot)_driver;
+                Screenshot screenshot = screenshotDriver.GetScreenshot();
+
+                string screenshotPath = Path.Combine(TestContext.CurrentContext.WorkDirectory,
+                                     $"{TestContext.CurrentContext.Test.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+                screenshot.SaveAsFile(screenshotPath);
+
+                TestContext.AddTestAttachment(screenshotPath, "Screenshot on Failure");
+            }
+        }
+
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
@@ -32,10 +64,9 @@ namespace Web_UI_Automation.NUnit
 
         [Test]
         [Category("Navigation")]
-        public void Test_AboutEhuPageNavigation()
+        public void Test_AboutEhuPageNavigation_Pass()
         {
-            LoggerManager.Logger.Information("Starting Test_AboutEhuPageNavigation");
-
+            LoggerManager.Logger.Information("Starting Test_AboutEhuPageNavigation_Pass");
             _homePage.GoToHomePage();
             _homePage.ClickAboutLink();
 
@@ -45,7 +76,7 @@ namespace Web_UI_Automation.NUnit
             var header = _driver.FindElement(By.XPath("//strong[contains(text(), 'European Humanities University (EHU)')]"));
             header.ShouldNotBeNull();
 
-            LoggerManager.Logger.Information("Test_AboutEhuPageNavigation passed successfully.");
+            LoggerManager.Logger.Information("Test_AboutEhuPageNavigation_Pass passed successfully.");
         }
 
         public static IEnumerable<TestCaseData> SearchTermsData()
@@ -57,9 +88,9 @@ namespace Web_UI_Automation.NUnit
         [Test]
         [Category("Search")]
         [TestCaseSource(nameof(SearchTermsData))]
-        public void Test_SearchFunctionality(string searchTerm, string expectedUrlPart, string expectedResultWord)
+        public void Test_SearchFunctionality_DataProvider(string searchTerm, string expectedUrlPart, string expectedResultWord)
         {
-            LoggerManager.Logger.Information($"Starting Test_SearchFunctionality with term: {searchTerm}");
+            LoggerManager.Logger.Information($"Starting Test_SearchFunctionality_DataProvider with term: {searchTerm}");
 
             _homePage.GoToHomePage();
 
@@ -68,7 +99,23 @@ namespace Web_UI_Automation.NUnit
 
             searchComponent.CheckResults(expectedUrlPart, expectedResultWord).ShouldBeTrue($"Search results for '{searchTerm}' were not relevant.");
 
-            LoggerManager.Logger.Information("Test_SearchFunctionality passed successfully.");
+            LoggerManager.Logger.Information("Test_SearchFunctionality_DataProvider passed successfully.");
+        }
+
+        [Test]
+        [Category("Search")]
+        public void Test_SearchFunctionality_Fail()
+        {
+            LoggerManager.Logger.Information("Starting Test_SearchFunctionality_Fail (Expected to Fail)");
+
+            _homePage.GoToHomePage();
+
+            var searchComponent = _homePage.GetSearchComponent();
+            searchComponent.PerformSearch("nonexistent term");
+
+            searchComponent.CheckResults("/?s=nonexistent+term", "nonexistent").ShouldBeTrue("This test should intentionally FAIL.");
+
+            LoggerManager.Logger.Information("Test_SearchFunctionality_Fail completed.");
         }
 
 
@@ -90,9 +137,12 @@ namespace Web_UI_Automation.NUnit
 
         [Test]
         [Category("Contact")]
-        public void Test_ContactInfoDisplayed()
+        public void Test_ContactInfoDisplayed_Skip()
         {
-            LoggerManager.Logger.Information("Starting Test_ContactInfoDisplayed");
+            Assert.Inconclusive("Skipping this test due to ongoing maintenance on Contact page.");
+            LoggerManager.Logger.Warning("Test_ContactInfoDisplayed was skipped.");
+
+            //LoggerManager.Logger.Information("Starting Test_ContactInfoDisplayed");
 
             var contactPage = new EhuContactPage(_driver);
             contactPage.GoToContactPage();
