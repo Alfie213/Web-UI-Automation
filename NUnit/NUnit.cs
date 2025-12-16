@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using TContext = NUnit.Framework.TestContext;
 using OpenQA.Selenium;
 using System.Collections.Generic;
 using Web_UI_Automation.Core;
@@ -38,19 +39,21 @@ namespace Web_UI_Automation.NUnit
         [TearDown]
         public void TearDown()
         {
-            if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+            if (TContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
             {
-                LoggerManager.Logger.Error($"Test Failed: {TestContext.CurrentContext.Test.Name}. Capturing screenshot.");
+                LoggerManager.Logger.Error($"Test Failed: {TContext.CurrentContext.Test.Name}. Capturing screenshot.");
 
                 ITakesScreenshot screenshotDriver = (ITakesScreenshot)_driver;
                 Screenshot screenshot = screenshotDriver.GetScreenshot();
 
-                string screenshotPath = Path.Combine(TestContext.CurrentContext.WorkDirectory,
-                                     $"{TestContext.CurrentContext.Test.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+                string screenshotPath = Path.Combine(
+                    TContext.CurrentContext.WorkDirectory,
+                    $"{TContext.CurrentContext.Test.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.png" // УБРАН ПОЛНЫЙ ПУТЬ ИЗ СТРОКИ
+                );
 
                 screenshot.SaveAsFile(screenshotPath);
 
-                TestContext.AddTestAttachment(screenshotPath, "Screenshot on Failure");
+                TContext.AddTestAttachment(screenshotPath, "Screenshot on Failure");
             }
         }
 
